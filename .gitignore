@@ -1,0 +1,12 @@
+# Ignore build files
+*.bin
+*.elf
+*.hex
+*.eep
+*.map
+*.srec
+*.sym
+*.lss
+
+# Linux system files
+*~
