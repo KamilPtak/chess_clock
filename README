@@ -1,0 +1,28 @@
+# Arduino Chess Clock ⏰♟️
+
+A simple, fully functional chess clock for Arduino, built in C++ using **PlatformIO**.  
+Supports classic time control and time increment.
+
+## Features
+
+- Configurable starting time (hours/minutes/seconds)
+- Optional time increment (seconds and minutes)
+- Visual feedback with Liquid Crystal  and LEDs 
+- Audible signal (buzzer) on move switch and time expiration
+
+## Hardware Requirements
+
+- Arduino board (Mega2560 used in project)
+- Push buttons end encoder
+- Liquid Crystal screen LEDs 
+- 1 buzzer (move sound + time warning)
+
+All pins are defined in `include/pin_defines.h`
+
+
+## Build & Upload (PlatformIO)
+
+```bash
+pio run              # Compile the project
+pio run -t upload    # Upload to your Arduino
+pio device monitor   # View serial output (debugging)
