@@ -3,21 +3,21 @@
 #include "pin_defines.h"
 #include "clock.h"
 #include "player.h"
+#include "hardware_setup.h"
 
-
-Player playerWhite(Color::White, PlayerTime(0, 5, 0, optional<uint8_t>(), optional<uint8_t>()));
-Player playerBlack(Color::Black, PlayerTime(0, 5, 0, optional<uint8_t>(), optional<uint8_t>()));
-ChessClock chessClock(playerWhite, playerBlack);
-
-
+static Player* playerWhite;
+static Player* playerBlack;
 
 void setup(){
-    pinMode (13, OUTPUT);
+    setupHardware();
+    playerWhite = new Player(Color::White, PlayerTime(0, 5, 0, optional<uint8_t>(), optional<uint8_t>()));
+    playerBlack = new Player(Color::Black, PlayerTime(0, 5, 0, optional<uint8_t>(), optional<uint8_t>()));
+    ChessClock::instance = new ChessClock(*playerWhite, *playerBlack);
 }
 
 void loop(){
-    digitalWrite (LED_PIN, HIGH);
-    delay (500);
-    digitalWrite (LED_PIN, LOW);
-    delay (500);
+    if (ChessClock::instance && ChessClock::instance->consumeSecondFlag()) {
+        digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+    }
+
 }

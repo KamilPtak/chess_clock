@@ -1,30 +1,28 @@
 #pragma once
-
-#include <player.h>
-
+#include "player.h"
 
 class ChessClock {
 public:
-    ChessClock(
-        Player playerWhite,
-        Player playerBlack
-    ) 
-    : playerWhite(playerWhite)
-    , playerBlack(playerBlack)
-    , currentPlayer(&playerWhite)
-    , running(false) {}
+    static ChessClock* instance;
+
+    ChessClock(Player& white, Player& black);
 
     void start();
     void stop();
-    void tick();
-
-    int getTimeRemaining() const;
     bool isRunning() const;
 
-private:
-    Player playerWhite;
-    Player playerBlack;
-    Player* currentPlayer;
-    bool running;
-};
+    void tick();
+    void onSecondInterrupt();
 
+    static volatile bool secondElapsed;
+    static void notifySecond();
+    bool consumeSecondFlag();
+
+    void handleInterruptFlags();
+
+    Player* currentPlayer;
+    Player& whitePlayer;
+    Player& blackPlayer;
+
+    bool running = false;
+};
