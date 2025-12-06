@@ -1,28 +1,35 @@
 #pragma once
-#include "player.h"
+#include "player/player.h"
 
-class ChessClock {
+// Chess clock logic - manages game time for both players
+namespace chess_clock {
+
+class Clock {
 public:
-    static ChessClock* instance;
+  static Clock *instance;
 
-    ChessClock(Player& white, Player& black);
+  Clock(player::PlayerInfo &white, player::PlayerInfo &black,
+        uint16_t timerIntervalMs = 1000);
 
-    void start();
-    void stop();
-    bool isRunning() const;
+  void start();
+  void stop();
+  bool isRunning() const;
 
-    void tick();
-    void onSecondInterrupt();
+  void tick();
+  void onSecondInterrupt();
 
-    static volatile bool secondElapsed;
-    static void notifySecond();
-    bool consumeSecondFlag();
+  static volatile bool secondElapsed;
+  static void notifySecond();
+  bool consumeSecondFlag();
 
-    void handleInterruptFlags();
+  void handleInterruptFlags();
 
-    Player* currentPlayer;
-    Player& whitePlayer;
-    Player& blackPlayer;
+  player::PlayerInfo *currentPlayer;
+  player::PlayerInfo &whitePlayer;
+  player::PlayerInfo &blackPlayer;
 
-    bool running = false;
+  uint16_t timerIntervalMs;
+  bool running = false;
 };
+
+} // namespace chess_clock

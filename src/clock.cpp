@@ -4,75 +4,66 @@
 extern volatile bool whitePressed;
 extern volatile bool blackPressed;
 
-volatile bool ChessClock::secondElapsed = false;
-ChessClock* ChessClock::instance = nullptr;
+namespace chess_clock {
 
-ChessClock::ChessClock(Player& white, Player& black)
-    : whitePlayer(white), blackPlayer(black)
-{
+volatile bool Clock::secondElapsed = false;
+Clock *Clock::instance = nullptr;
+
+Clock::Clock(player::PlayerInfo &white, player::PlayerInfo &black,
+             uint16_t timerIntervalMs)
+    : whitePlayer(white), blackPlayer(black), timerIntervalMs(timerIntervalMs) {
+  currentPlayer = &whitePlayer;
+}
+
+void Clock::start() { running = true; }
+
+void Clock::stop() { running = false; }
+
+bool Clock::isRunning() const { return running; }
+
+void Clock::handleInterruptFlags() {
+  if (whitePressed and currentPlayer->color == player::Color::White) {
+    whitePressed = false;
+    currentPlayer->time.increaseBySeconds(
+        currentPlayer->time.getIncrementSeconds());
+    currentPlayer = &blackPlayer;
+    return;
+  }
+
+  if (blackPressed and currentPlayer->color == player::Color::Black) {
+    blackPressed = false;
+    currentPlayer->time.increaseBySeconds(
+        currentPlayer->time.getIncrementSeconds());
     currentPlayer = &whitePlayer;
+    return;
+  }
 }
 
-void ChessClock::start() {
-    running = true;
+void Clock::tick() {
+  if (!running)
+    return;
+
+  handleInterruptFlags();
+
+  if (currentPlayer->time.getRemainingMilliseconds() <= timerIntervalMs) {
+    currentPlayer->time.decreaseByMilliseconds(
+        currentPlayer->time.getRemainingMilliseconds());
+    stop();
+  } else {
+    currentPlayer->time.decreaseByMilliseconds(timerIntervalMs);
+  }
 }
 
-void ChessClock::stop() {
-    running = false;
+void Clock::notifySecond() { secondElapsed = true; }
+
+void Clock::onSecondInterrupt() { notifySecond(); }
+
+bool Clock::consumeSecondFlag() {
+  if (secondElapsed) {
+    secondElapsed = false;
+    return true;
+  }
+  return false;
 }
 
-bool ChessClock::isRunning() const {
-    return running;
-}
-
-void ChessClock::handleInterruptFlags() {
-    if (whitePressed and currentPlayer->color == Color::White) {
-        whitePressed = false;
-        currentPlayer->time.remainingSeconds +=
-            currentPlayer->time.incrementSeconds.value_or(0);
-        currentPlayer = &blackPlayer;
-        return;
-    }
-
-    if (blackPressed and currentPlayer->color == Color::Black) {
-        blackPressed = false;
-        currentPlayer->time.remainingSeconds +=
-            currentPlayer->time.incrementSeconds.value_or(0);
-        currentPlayer = &whitePlayer;
-        return;
-    }
-}
-
-void ChessClock::tick() {
-    if (!running)
-        return;
-
-    handleInterruptFlags();
-
-    int& t = currentPlayer->time.remainingSeconds;
-
-    if (t > 0) {
-        t--;
-
-        if (t <= 0) {
-            t = 0;
-            stop();
-        }
-    }
-}
-
-void ChessClock::notifySecond() {
-    secondElapsed = true;
-}
-
-void ChessClock::onSecondInterrupt() {
-    notifySecond();
-}
-
-bool ChessClock::consumeSecondFlag() {
-    if (secondElapsed) {
-        secondElapsed = false;
-        return true;
-    }
-    return false;
-}
+} // namespace chess_clock
